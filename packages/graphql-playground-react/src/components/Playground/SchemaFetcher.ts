@@ -88,6 +88,19 @@ export class SchemaFetcher {
     return `${session.endpoint}~${session.headers || ''}`
   }
   private getSchema(data: any) {
+    data.__schema.types.forEach(({ kind, inputFields }, typeIndex) => {
+      if (kind === 'INPUT_OBJECT' && inputFields) {
+        inputFields.forEach(({ type }, fieldIndex) => {
+          if (type && type.name && type.name.startsWith('ListWithCard_')) {
+            data.__schema.types[typeIndex].inputFields[fieldIndex].type.kind =
+              'LIST'
+            data.__schema.types[typeIndex].inputFields[
+              fieldIndex
+            ].type.name = null
+          }
+        })
+      }
+    })
     const schemaString = JSON.stringify(data)
     const cachedSchema = this.schemaInstanceCache.get(schemaString)
     if (cachedSchema) {
@@ -130,7 +143,6 @@ export class SchemaFetcher {
           if (!schemaData) {
             throw new NoSchemaError(endpoint)
           }
-
           const schema = this.getSchema(schemaData.data as any)
           const tracingSupported =
             (schemaData.extensions && Boolean(schemaData.extensions.tracing)) ||
