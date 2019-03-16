@@ -98,6 +98,19 @@ export class SchemaFetcher {
               fieldIndex
             ].type.name = null
           }
+          if (
+            type &&
+            type.kind === 'NON_NULL' &&
+            type.ofType.name.startsWith('ListWithCard_')
+          ) {
+            data.__schema.types[typeIndex].inputFields[
+              fieldIndex
+            ].type.ofType.kind =
+              'LIST'
+            data.__schema.types[typeIndex].inputFields[
+              fieldIndex
+            ].type.ofType.name = null
+          }
         })
       }
     })
